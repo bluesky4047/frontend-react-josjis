@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --font-roboto: "Roboto", sans-serif;
+  --font-paytone: "Paytone One", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+
+  --color-primary-red: #d20102;
+  --color-primary-dark-red: #770001;
+  --color-accent-yellow: #ffd900;
+  --color-success-green: #58E85A;
+  --color-brown: #743B0E;
+}
+
+@layer base {
+  body {
+    @apply font-roboto text-black bg-white;
+  }
+}
