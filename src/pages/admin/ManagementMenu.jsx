@@ -12,7 +12,6 @@ const imgIcon1 = "/admin/plus.svg";
 const imgVector6 = "/admin/edit.svg";
 const imgWeuiDeleteOnFilled = "/admin/delete.svg";
 
-
 import { useProducts } from "../../services/adminProducts/productContext";
 
 const ManagementMenu = () => {
@@ -57,19 +56,23 @@ const ManagementMenu = () => {
   };
 
   const filteredMenu = products.filter((item) => {
-  if (item.is_deleted) return false;
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-  const matchesSearch = item.name
-    .toLowerCase()
-    .includes(searchTerm.toLowerCase());
+    let matchesCategory;
 
-  const matchesCategory =
-    selectedCategory === "Semua Kategori" ||
-    item.category.toLowerCase() === selectedCategory.toLowerCase();
+    if (selectedCategory === "Semua Kategori") {
+      matchesCategory = item.is_deleted === false; 
+    } else if (selectedCategory === "Deleted") {
+      matchesCategory = item.is_deleted === true;
+    } else {
+      matchesCategory =
+        item.category.toLowerCase() === selectedCategory.toLowerCase();
+    }
 
-  return matchesSearch && matchesCategory;
-});
-
+    return matchesSearch && matchesCategory;
+  });
 
   const stats = {
     total: menuItems.length,
@@ -96,14 +99,16 @@ const ManagementMenu = () => {
 
         {/* Stats Section */}
         <div className="flex gap-[120px] mb-[35px]">
-          <div className="w-[380px] h-[120px] rounded-[15px]
+          <div
+            className="w-[380px] h-[120px] rounded-[15px]
               border border-white/20
               bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_100%)]
               backdrop-blur-xl
               shadow-[inset_0_30px_12px_-21px_rgba(0,0,0,0.32),0_0_42px_0_rgba(0,0,0,0.1)]
-              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]">
+              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]"
+          >
             <div className="w-[81px] h-[72px] bg-[rgba(217,217,217,0.1)] border border-white rounded-[15px] flex items-center justify-center">
-               <img src="/admin/orders.svg" className="w-[43px] h-[43px]" />
+              <img src="/admin/orders.svg" className="w-[43px] h-[43px]" />
             </div>
             <div>
               <p className="font-roboto font-medium text-[18px] text-white">
@@ -114,12 +119,14 @@ const ManagementMenu = () => {
               </p>
             </div>
           </div>
-          <div className="w-[380px] h-[120px] rounded-[15px]
+          <div
+            className="w-[380px] h-[120px] rounded-[15px]
               border border-white/20
               bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_100%)]
               backdrop-blur-xl
               shadow-[inset_0_30px_12px_-21px_rgba(0,0,0,0.32),0_0_42px_0_rgba(0,0,0,0.1)]
-              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]">
+              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]"
+          >
             <div className="w-[81px] h-[72px] bg-[rgba(217,217,217,0.1)] border border-white rounded-[15px] flex items-center justify-center">
               <img src="/admin/makanan.svg" className="w-[46px] h-[46px]" />
             </div>
@@ -132,11 +139,13 @@ const ManagementMenu = () => {
               </p>
             </div>
           </div>
-          <div className="w-[380px] h-[120px] rounded-[15px] border border-white/20
+          <div
+            className="w-[380px] h-[120px] rounded-[15px] border border-white/20
               bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_100%)]
               backdrop-blur-xl
               shadow-[inset_0_30px_12px_-21px_rgba(0,0,0,0.32),0_0_42px_0_rgba(0,0,0,0.1)]
-              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]">
+              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]"
+          >
             <div className="w-[81px] h-[72px] bg-[rgba(217,217,217,0.1)] border border-white rounded-[15px] flex items-center justify-center">
               <img src="/admin/minuman.svg" className="w-[46px] h-[46px]" />
             </div>
@@ -165,6 +174,7 @@ const ManagementMenu = () => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                 >
                   <option value="Semua Kategori">Semua Kategori</option>
+                  <option value="Deleted">Deleted</option>
                   <option value="Makanan">Makanan</option>
                   <option value="Minuman">Minuman</option>
                 </select>
@@ -176,11 +186,11 @@ const ManagementMenu = () => {
               </div>
               <div className="relative w-[200px] h-[30px] bg-[#9d8a7e] rounded-[10px] shadow-[0px_10px_6px_rgba(0,0,0,0.25)] flex items-center px-[13px]">
                 <img
-                    src="/admin/search.svg"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-[14px] h-[14px] brightness-0 invert opacity-80"
-                    alt="search"
+                  src="/admin/search.svg"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-[14px] h-[14px] brightness-0 invert opacity-80"
+                  alt="search"
                 />
-                
+
                 <input
                   type="text"
                   placeholder="Cari Menu..."
@@ -257,33 +267,32 @@ const ManagementMenu = () => {
                   {rupiahFormat(product.price)}
                 </span>
 
-                
-                  <div
-                    className={`px-[10px] py-[4px] rounded-[5px] text-center inline-block translate-x-[-30px] ${
+                <div
+                  className={`px-[10px] py-[4px] rounded-[5px] text-center inline-block translate-x-[-30px] ${
+                    product.is_deleted === true
+                      ? "bg-[#d20102]/85"
+                      : product.is_active === true
+                        ? "bg-accent-yellow/85"
+                        : "bg-[#d20102]/85"
+                  }`}
+                >
+                  <span
+                    className={`font-roboto font-medium text-[18px] ${
                       product.is_deleted === true
-                        ? "bg-[#d20102]/85"
+                        ? "text-white"
                         : product.is_active === true
-                          ? "bg-accent-yellow/85"
-                          : "bg-[#d20102]/85"
+                          ? "text-[#743B0E]"
+                          : "text-white"
                     }`}
                   >
-                    <span
-                        className={`font-roboto font-medium text-[18px] ${
-                          product.is_deleted === true
-                            ? "text-white"
-                            : product.is_active === true
-                              ? "text-[#743B0E]"
-                              : "text-white"
-                        }`}
-                      >
-                        {product.is_deleted === true
-                          ? "Deleted"
-                          : product.is_active === true
-                            ? "Tersedia"
-                            : "Habis"}
-                    </span>
-                  </div>
-                
+                    {product.is_deleted === true
+                      ? "Deleted"
+                      : product.is_active === true
+                        ? "Tersedia"
+                        : "Habis"}
+                  </span>
+                </div>
+
                 <div className="flex gap-[8px] items-center">
                   <div
                     className="w-[20px] h-[20px] cursor-pointer hover:scale-110 transition-transform"
@@ -311,33 +320,30 @@ const ManagementMenu = () => {
         </div>
       </div>
 
+      {(modalType === "add" || modalType === "edit") && (
+        <ProductFormModal
+          product={selected}
+          onClose={() => {
+            setModalType(null);
+            setSelected(null);
+          }}
+          onSave={async (data) => {
+            try {
+              if (modalType === "add") {
+                await addProduct(data);
+              } else {
+                await editProduct(data.id, data);
+              }
 
-
-
-{(modalType === "add" || modalType === "edit") && (
-  <ProductFormModal
-    product={selected}
-    onClose={() => {
-      setModalType(null);
-      setSelected(null);
-    }}
-    onSave={async (data) => {
-      try {
-        if (modalType === "add") {
-          await addProduct(data);
-        } else {
-          await editProduct(data.id, data);
-        }
-
-        setModalType(null);
-        setSelected(null);
-      } catch (err) {
-        console.error(err);
-      }
-    }}
-  />
-)}
+              setModalType(null);
+              setSelected(null);
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+        />
+      )}
     </AdminLayout>
   );
-}
-export default ManagementMenu;   
+};
+export default ManagementMenu;
