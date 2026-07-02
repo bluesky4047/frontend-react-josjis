@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
     },
     preview: {
       port,
-      allowedHosts: ["josjis.rafn.tech"],
+      allowedHosts: ["app-josjis.rafn.tech"],
     },
   };
 });
