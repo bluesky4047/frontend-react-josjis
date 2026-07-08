@@ -43,6 +43,13 @@ const Home = () => {
     return matchesSearch && matchesCategory;
   });
 
+  const changePage = (newPage) => {
+    setQuery((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-black relative">
       <Navbar />
@@ -127,10 +134,86 @@ const Home = () => {
           </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 relative z-10">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 relative z-10">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+              {/* Pagination */}
+              <div className="mt-16 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-8 py-5 shadow-lg">
+                {/* Limit */}
+                <div className="flex items-center gap-3 text-white font-roboto">
+                  <span className="text-lg">Tampilkan</span>
+
+                  <select
+                    value={query.limit}
+                    onChange={(e) =>
+                      setQuery((prev) => ({
+                        ...prev,
+                        limit: Number(e.target.value),
+                        page: 1,
+                      }))
+                    }
+                    className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white outline-none focus:border-[#FFD900]"
+                  >
+                    <option className="text-black" value={5}>
+                      5
+                    </option>
+                    <option className="text-black" value={10}>
+                      10
+                    </option>
+                    <option className="text-black" value={20}>
+                      20
+                    </option>
+                    <option className="text-black" value={50}>
+                      50
+                    </option>
+                    <option className="text-black" value={100}>
+                      100
+                    </option>
+                  </select>
+
+                  <span className="text-lg">menu</span>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex items-center gap-4">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => changePage(page - 1)}
+                    className={`px-6 py-3 rounded-full font-bold transition-all ${
+                      page === 1
+                        ? "bg-white/5 text-white/30 cursor-not-allowed"
+                        : "bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95"
+                    }`}
+                  >
+                    ← Prev
+                  </button>
+
+                  <div className="px-6 py-3 rounded-full bg-[#FFD900] text-[#743B0E] font-black shadow-lg">
+                    {meta?.page} / {meta?.totalPages}
+                  </div>
+
+                  <button
+                    disabled={page >= (meta?.totalPages || 1)}
+                    onClick={() => changePage(page + 1)}
+                    className={`px-6 py-3 rounded-full font-bold transition-all ${
+                      page >= (meta?.totalPages || 1)
+                        ? "bg-white/5 text-white/30 cursor-not-allowed"
+                        : "bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95"
+                    }`}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : isLoading ? (
+            <div className="text-center py-32 bg-white/5 backdrop-blur-sm rounded-[30px] border border-white/10 relative z-10">
+              <p className="text-3xl font-roboto text-white/40 italic font-light">
+                Memuat menu...
+              </p>
             </div>
           ) : (
             <div className="text-center py-32 bg-white/5 backdrop-blur-sm rounded-[30px] border border-white/10 relative z-10">
