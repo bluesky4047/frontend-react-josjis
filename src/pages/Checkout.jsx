@@ -9,31 +9,28 @@ const Checkout = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [tables, setTables] = useState([]); 
-   const [selectedTable, setSelectedTable] = useState("");
-   const [customerName, setCustomerName] = useState("");
+  const [tables, setTables] = useState([]);
+  const [selectedTable, setSelectedTable] = useState("");
+  const [customerName, setCustomerName] = useState("");
 
-   const [orderType, setOrderType] = useState("dine_in"); // default: Dine In
-   const [notes, setNotes] = useState("");
+  const [orderType, setOrderType] = useState("dine_in"); // default: Dine In
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     fetchTables();
 
-    const cartData = JSON.parse(
-      localStorage.getItem("cartItems") || "[]"
-    );
+    const cartData = JSON.parse(localStorage.getItem("cartItems") || "[]");
 
     setOrder({
       order_items: cartData,
       total_amount: cartData.reduce(
         (total, item) => total + item.price * item.quantity,
-        0
+        0,
       ),
     });
 
     setLoading(false);
   }, []);
-
 
   const handleQty = async (itemId, type) => {
     // NOTE: ini optional (kalau backend support update order)
@@ -41,119 +38,119 @@ const Checkout = () => {
     console.log(itemId, type);
   };
 
-
-const fetchTables = async () => {
-  try {
-    const res = await api.get("/tables"); // Menembak endpoint GET /tables
-    const tableData = res.data?.data || res.data;
-    if (Array.isArray(tableData)) {
-      setTables(tableData.filter(t => t.is_active)); // Hanya ambil meja yang aktif
+  const fetchTables = async () => {
+    try {
+      const res = await api.get("/tables"); // Menembak endpoint GET /tables
+      const tableData = res.data?.data || res.data;
+      if (Array.isArray(tableData)) {
+        setTables(tableData.filter((t) => t.is_active)); // Hanya ambil meja yang aktif
+      }
+    } catch (err) {
+      console.error("Gagal mengambil daftar meja:", err);
     }
-  } catch (err) {
-    console.error("Gagal mengambil daftar meja:", err);
-  }
-};
-
-const createOrder = async () => {
-  try {
-    if (!customerName.trim()) {
-      alert("Nama pemesan wajib diisi");
-      return null;
-    }
-
-    if (orderType === "dine_in" && !selectedTable) {
-      alert("Silakan pilih nomor meja");
-      return null;
-    }
-
-    const cartItems = JSON.parse(
-      localStorage.getItem("cartItems") || "[]"
-    );
-
-  const payload = {
-    customerName,
-    items: cartItems.map(item => ({
-      productId: item.id,
-      quantity: item.quantity,
-      notes: notes || "",
-    })),
   };
 
-  if (orderType === "dine_in") {
-    payload.tableId = selectedTable;
-  }
+  const createOrder = async () => {
+    try {
+      if (!customerName.trim()) {
+        alert("Nama pemesan wajib diisi");
+        return null;
+      }
 
-    console.log("ORDER PAYLOAD:", payload);
+      if (orderType === "dine_in" && !selectedTable) {
+        alert("Silakan pilih nomor meja");
+        return null;
+      }
 
-    const res = await api.post("/orders", payload);
+      const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
 
-    const orderId = res.data?.data?.id;
+      const payload = {
+        customerName,
+        items: cartItems.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          notes: notes || "",
+        })),
+      };
 
-    if (!orderId) {
-      throw new Error("Order ID tidak ditemukan");
+      if (orderType === "dine_in") {
+        payload.tableId = selectedTable;
+      }
+
+      console.log("ORDER PAYLOAD:", payload);
+
+      const res = await api.post("/orders", payload);
+
+      const orderId = res.data?.data?.id;
+
+      if (!orderId) {
+        throw new Error("Order ID tidak ditemukan");
+      }
+
+      localStorage.setItem("orderId", orderId);
+
+      console.log("ORDER ID:", orderId);
+
+      return orderId;
+    } catch (err) {
+      console.log("ERROR OBJECT:", err);
+      console.log("ERROR RESPONSE:", err?.response);
+      console.log("ERROR DATA:", JSON.stringify(err?.response?.data, null, 2));
+      console.log("ERROR MESSAGE:", err?.message);
+
+      return null;
     }
+  };
 
-    localStorage.setItem("orderId", orderId);
+  const handleNonTunai = async () => {
+    try {
+      const orderId = await createOrder();
 
-    console.log("ORDER ID:", orderId);
+      if (!orderId) return;
 
-    return orderId;
+      const res = await api.post("/payments", {
+        orderId,
+        method: "midtrans",
+      });
 
+      const token = res.data.data.token;
+      console.log("token", token);
 
-  } catch (err) {
-  console.log("ERROR OBJECT:", err);
-  console.log("ERROR RESPONSE:", err?.response);
-  console.log(
-  "ERROR DATA:",
-  JSON.stringify(err?.response?.data, null, 2)
-);
-  console.log("ERROR MESSAGE:", err?.message);
-
-  return null;
-}
-};
-
-const handleNonTunai = async () => {
-  try {
-    const orderId = await createOrder();
-
-    if (!orderId) return;
-
-    const res = await api.post("/payments", {
-      orderId,
-      method: "midtrans",
-    });
-
-    const redirectUrl = res.data?.data?.redirect_url;
-
-    if (!redirectUrl) {
-      throw new Error("Redirect URL tidak ditemukan");
+      // @ts-expect-error belum di support
+      window.snap.pay(token, {
+        onSuccess: async function () {
+          alert("Pembayaran berhasil!");
+          navigate("/success");
+        },
+        onPending: function () {
+          alert("Pembayaran tertunda. Silakan selesaikan nanti.");
+        },
+        onError: function () {
+          alert("Terjadi kesalahan saat pembayaran.");
+        },
+        onClose: function () {
+          alert("Anda menutup popup sebelum menyelesaikan pembayaran.");
+        },
+      });
+    } catch (err) {
+      console.error("Gagal memproses pembayaran:", err);
+      alert("Gagal memulai pembayaran.");
     }
+  };
 
-    window.location.href = redirectUrl;
-  } catch (error) {
-    console.error(error);
+  const handleCash = async () => {
+    try {
+      const orderId = await createOrder();
 
-    alert(
-      error.response?.data?.message ||
-      "Gagal membuat pembayaran"
-    );
-  }
-};
+      if (!orderId) return;
 
-const handleCash = async () => {
-  try {
-    const orderId = await createOrder();
+      navigate("/payment/cash");
+    } catch (error) {
+      console.error(error);
 
-    if (!orderId) return;
-
-    navigate("/payment/cash");
-  } catch (error) {
-    console.error(error);
-
-    alert("Gagal membuat pesanan");
-  }
-};
+      alert("Gagal membuat pesanan");
+    }
+  };
 
   if (loading) {
     return (
@@ -162,8 +159,6 @@ const handleCash = async () => {
       </div>
     );
   }
-
-
 
   return (
     <div
@@ -195,7 +190,6 @@ const handleCash = async () => {
       {/* CONTENT */}
       <main className="relative z-10 flex justify-center pb-20 mt-10">
         <div className="w-full max-w-[900px] bg-white/70 rounded-2xl p-8">
-
           {/* ORDER ITEMS */}
           <div className="max-w-[750px] mx-auto space-y-4">
             {order?.order_items?.map((item) => (
@@ -204,30 +198,25 @@ const handleCash = async () => {
                 className="flex justify-between items-center border-b pb-3"
               >
                 <div>
-                  <p className="text-xl font-bold text-black">
-                    {item.name}
-                  </p>
+                  <p className="text-xl font-bold text-black">{item.name}</p>
                   <p className="text-sm text-black/60">
-                    Rp {Number(item.price).toLocaleString('id-ID')}
+                    Rp {Number(item.price).toLocaleString("id-ID")}
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <p className="font-semibold text-black">
-                    x{item.quantity}
-                  </p>
-
-                  
+                  <p className="font-semibold text-black">x{item.quantity}</p>
                 </div>
               </div>
             ))}
           </div>
 
-
           {/* FORM */}
-            <div className="mt-8 space-y-4 text-black max-w-[650px] mx-auto">
+          <div className="mt-8 space-y-4 text-black max-w-[650px] mx-auto">
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Nama Pemesan</label>
+              <label className="block text-sm font-bold text-gray-800 mb-1">
+                Nama Pemesan
+              </label>
               <input
                 type="text"
                 placeholder="Masukkan Nama Anda"
@@ -238,7 +227,9 @@ const handleCash = async () => {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">Tipe Pesanan</label>
+              <label className="block text-sm font-bold text-gray-800 mb-2">
+                Tipe Pesanan
+              </label>
               <div className="grid grid-cols-2 gap-4">
                 {/* Tombol Makan Sini (Dine In) */}
                 <button
@@ -258,7 +249,7 @@ const handleCash = async () => {
                   type="button"
                   onClick={() => {
                     setOrderType("take_away");
-                    setSelectedTable(""); 
+                    setSelectedTable("");
                   }}
                   className={`p-3 rounded-lg font-bold border transition-all shadow-sm ${
                     orderType === "take_away"
@@ -273,17 +264,23 @@ const handleCash = async () => {
 
             {/* Dropdown Meja */}
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Nomor Meja</label>
+              <label className="block text-sm font-bold text-gray-800 mb-1">
+                Nomor Meja
+              </label>
               <select
                 value={selectedTable}
                 onChange={(e) => setSelectedTable(e.target.value)}
                 disabled={orderType === "take_away"} // 🚀 OTOMATIS GA BISA DIKLIK JIKA BUNGKUS
                 className={`w-full p-2.5 border rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#770001] ${
-                  orderType === "take_away" ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-60" : "text-black"
+                  orderType === "take_away"
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed opacity-60"
+                    : "text-black"
                 }`}
               >
                 <option value="">
-                  {orderType === "take_away" ? "Tidak memerlukan nomor meja" : "Masukkan nomor meja yang ditempati"}
+                  {orderType === "take_away"
+                    ? "Tidak memerlukan nomor meja"
+                    : "Masukkan nomor meja yang ditempati"}
                 </option>
                 {tables.map((table) => (
                   <option key={table.id} value={table.id}>
@@ -293,10 +290,11 @@ const handleCash = async () => {
               </select>
             </div>
 
-
             {/* Catatan Tambahan */}
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Catatan Tambahan (Optional)</label>
+              <label className="block text-sm font-bold text-gray-800 mb-1">
+                Catatan Tambahan (Optional)
+              </label>
               <input
                 type="text"
                 placeholder="Contoh: Sambal dipisah, es teh jangan terlalu manis."
@@ -305,7 +303,6 @@ const handleCash = async () => {
                 className="w-full p-2.5 border rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#770001]"
               />
             </div>
-
           </div>
 
           {/* TOTAL */}
@@ -321,18 +318,17 @@ const handleCash = async () => {
             </div>
           </div>
 
-              
           {/* PAYMENT BUTTON */}
-         <div className="max-w-[500px] mx-auto mt-8">
+          <div className="max-w-[500px] mx-auto mt-8">
             <h3 className="text-center text-xl font-bold text-black mb-4">
               Pilih Pembayaran
             </h3>
 
             <div className="flex justify-center gap-6">
-            {/* QRIS / NON TUNAI */}
-            <button
-              onClick={handleNonTunai}
-              className="
+              {/* QRIS / NON TUNAI */}
+              <button
+                onClick={handleNonTunai}
+                className="
                 w-[220px]
                 py-4
                 bg-[#FFD900]
@@ -347,14 +343,14 @@ const handleCash = async () => {
                 active:scale-95
                 border border-white/20
               "
-            >
-              NON TUNAI
-            </button>
+              >
+                NON TUNAI
+              </button>
 
-            {/* CASH */}
-            <button
-              onClick={handleCash}
-              className="
+              {/* CASH */}
+              <button
+                onClick={handleCash}
+                className="
                 w-[220px]
                 py-4
                 text-[#FFD900]
@@ -369,11 +365,10 @@ const handleCash = async () => {
                 active:scale-95
                 border border-white/20
               "
-            >
-              TUNAI
-            </button>
-          </div>
-
+              >
+                TUNAI
+              </button>
+            </div>
           </div>
         </div>
       </main>
