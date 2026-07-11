@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { productsApi } from "../services/adminProducts/productsApi";
 import { ordersApi } from "../services/adminOrders/ordersApi";
 import { ratingsApi } from "../services/adminRating/ratingsApi";
+import { tablesApi } from "../services/adminTables/tablesApi";
 
 export const store = configureStore({
   reducer: {
@@ -9,6 +10,7 @@ export const store = configureStore({
     [productsApi.reducerPath]: productsApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
     [ratingsApi.reducerPath]: ratingsApi.reducer,
+    [tablesApi.reducerPath]: tablesApi.reducer,
     // [paymentsApi.reducerPath]: paymentsApi.reducer,
     // [tablesApi.reducerPath]: tablesApi.reducer,
   },
@@ -19,6 +21,7 @@ export const store = configureStore({
       productsApi.middleware,
       ordersApi.middleware,
       ratingsApi.middleware,
+      tablesApi.middleware,
       // paymentsApi.middleware,
       // tablesApi.middleware,
     ),

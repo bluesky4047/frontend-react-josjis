@@ -9,6 +9,7 @@ const imgVector1 = "/admin/orders.svg";
 const imgVector2 = "/admin/logout.svg";
 const imgVector4 = "/admin/edit.svg";
 const imgVector5 = "/admin/dashboard.svg";
+const imgVector6 = "/icon_status.png";
 
 function MaterialSymbolsStarRounded({ className }) {
   return (
@@ -74,6 +75,22 @@ function MaterialSymbolsEdit({ className }) {
   );
 }
 
+function MaterialSymbolsTable({ className }) {
+  return (
+    <div
+      className={
+        className || "relative size-[40px] flex items-center justify-center"
+      }
+    >
+      <img
+        alt=""
+        className="max-h-full max-w-full object-contain"
+        src={imgVector6}
+      />
+    </div>
+  );
+}
+
 function MaterialSymbolsLightDashboardRounded({ className }) {
   return (
     <div
@@ -111,26 +128,39 @@ const Sidebar = () => {
 
   const orderContext = useOrders();
 
-  console.log("ORDER CONTEXT:", orderContext);
-
   const { orders = [] } = orderContext || {};
 
-  const pendingCount = orders.filter(
-    (o) => o.status === "pending"
-  ).length;
+  const pendingCount = orders.filter((o) => o.status === "pending").length;
   const menuItems = [
-    { name: "Dashboard", path: "/admin", icon: MaterialSymbolsLightDashboardRounded },
+    {
+      name: "Dashboard",
+      path: "/admin",
+      icon: MaterialSymbolsLightDashboardRounded,
+    },
     { name: "Manajemen Menu", path: "/admin/menu", icon: MaterialSymbolsEdit },
-    { name: "Pesanan", path: "/admin/orders", icon: LetsIconsOrderFill, hasBadge: true },
+    {
+      name: "Pesanan",
+      path: "/admin/orders",
+      icon: LetsIconsOrderFill,
+      hasBadge: true,
+    },
     { name: "Status Pesanan", path: "/admin/status", icon: MingcuteTimeFill },
-    { name: "Rating & Review", path: "/admin/reviews", icon: MaterialSymbolsStarRounded },
+    {
+      name: "Manajemen Meja",
+      path: "/admin/tables",
+      icon: MaterialSymbolsTable,
+    },
+    {
+      name: "Rating & Review",
+      path: "/admin/reviews",
+      icon: MaterialSymbolsStarRounded,
+    },
   ];
 
   const { user, logout } = useAuth();
 
   return (
     <div className="w-[360px] bg-gradient-to-b from-[#770001] via-[#770001] via-80% to-[#b30001] h-screen fixed left-0 top-0 border-r border-white/10 flex flex-col justify-between py-10 px-8 text-white z-50">
-      
       {/* Bagian Atas: Judul & Navigasi */}
       <div>
         <div className="mb-8">
@@ -149,8 +179,8 @@ const Sidebar = () => {
                 end={item.path === "/admin"}
                 className={({ isActive }) =>
                   `flex items-center justify-between px-4 py-3 rounded-xl transition-all text-white ${
-                    isActive 
-                      ? "bg-white/10 border border-white/20 font-bold" 
+                    isActive
+                      ? "bg-white/10 border border-white/20 font-bold"
                       : "hover:bg-white/5"
                   }`
                 }
@@ -185,8 +215,8 @@ const Sidebar = () => {
           <span className="font-roboto font-bold text-lg">Keluar</span>
         </button>
       </div>
-
     </div>
-  );};
+  );
+};
 
 export default Sidebar;

@@ -25,6 +25,9 @@ const Dashboard = React.lazy(() => import("../pages/admin/Dashboard"));
 const ManagementMenu = React.lazy(
   () => import("../pages/admin/ManagementMenu"),
 );
+const ManagementTable = React.lazy(
+  () => import("../pages/admin/ManagementTable"),
+);
 const AddEditMenu = React.lazy(() => import("../pages/admin/AddEditMenu"));
 const Orders = React.lazy(() => import("../pages/admin/Orders"));
 const OrderDetail = React.lazy(() => import("../pages/admin/OrderDetail"));
@@ -38,6 +41,7 @@ const NotFound = React.lazy(() => import("../pages/NotFound"));
 import { ProductProvider } from "../services/adminProducts/productContext";
 import { OrderProvider } from "../services/adminOrders/orderContext";
 import { RatingProvider } from "../services/adminRating/ratingsContext";
+import { TableProvider } from "../services/adminTables/tableContext";
 
 import { CustomerProductProvider } from "../services/customerProducts/customerProductContext";
 
@@ -183,6 +187,16 @@ export const router = createBrowserRouter([
         <OrderProvider>
           <OrderStatus />
         </OrderProvider>
+      </PrivateAuth>
+    ),
+  },
+  {
+    path: "/admin/tables",
+    element: (
+      <PrivateAuth>
+        <TableProvider>
+          <ManagementTable />
+        </TableProvider>
       </PrivateAuth>
     ),
   },
