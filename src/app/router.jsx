@@ -33,6 +33,7 @@ const Orders = React.lazy(() => import("../pages/admin/Orders"));
 const OrderDetail = React.lazy(() => import("../pages/admin/OrderDetail"));
 const OrderStatus = React.lazy(() => import("../pages/admin/OrderStatus"));
 const RatingReview = React.lazy(() => import("../pages/admin/RatingReview"));
+const ApiMonitoring = React.lazy(() => import("../pages/admin/ApiMonitoring"));
 
 const Unauthorized = React.lazy(() => import("../pages/Unauthorized"));
 const NotFound = React.lazy(() => import("../pages/NotFound"));
@@ -42,6 +43,7 @@ import { ProductProvider } from "../services/adminProducts/productContext";
 import { OrderProvider } from "../services/adminOrders/orderContext";
 import { RatingProvider } from "../services/adminRating/ratingsContext";
 import { TableProvider } from "../services/adminTables/tableContext";
+import { MonitoringProvider } from "../services/adminApiMonitoring/monitoringContext";
 
 import { CustomerProductProvider } from "../services/customerProducts/customerProductContext";
 
@@ -207,6 +209,16 @@ export const router = createBrowserRouter([
         <RatingProvider>
           <RatingReview />
         </RatingProvider>
+      </PrivateAuth>
+    ),
+  },
+  {
+    path: "/admin/api-monitoring",
+    element: (
+      <PrivateAuth>
+        <MonitoringProvider>
+          <ApiMonitoring />
+        </MonitoringProvider>
       </PrivateAuth>
     ),
   },

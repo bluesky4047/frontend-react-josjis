@@ -10,6 +10,7 @@ const imgVector2 = "/admin/logout.svg";
 const imgVector4 = "/admin/edit.svg";
 const imgVector5 = "/admin/dashboard.svg";
 const imgVector6 = "/icon_status.png";
+const imgVector7 = "/admin/clarity_administrator-solid.svg";
 
 function MaterialSymbolsStarRounded({ className }) {
   return (
@@ -91,6 +92,22 @@ function MaterialSymbolsTable({ className }) {
   );
 }
 
+function MaterialSymbolsApiMonitoring({ className }) {
+  return (
+    <div
+      className={
+        className || "relative size-[40px] flex items-center justify-center"
+      }
+    >
+      <img
+        alt=""
+        className="max-h-full max-w-full object-contain"
+        src={imgVector7}
+      />
+    </div>
+  );
+}
+
 function MaterialSymbolsLightDashboardRounded({ className }) {
   return (
     <div
@@ -154,6 +171,11 @@ const Sidebar = () => {
       name: "Rating & Review",
       path: "/admin/reviews",
       icon: MaterialSymbolsStarRounded,
+    },
+    {
+      name: "API Monitoring",
+      path: "/admin/api-monitoring",
+      icon: MaterialSymbolsApiMonitoring,
     },
   ];
 

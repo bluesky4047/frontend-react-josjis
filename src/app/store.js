@@ -3,6 +3,7 @@ import { productsApi } from "../services/adminProducts/productsApi";
 import { ordersApi } from "../services/adminOrders/ordersApi";
 import { ratingsApi } from "../services/adminRating/ratingsApi";
 import { tablesApi } from "../services/adminTables/tablesApi";
+import { monitoringsApi } from "../services/adminApiMonitoring/monitoringApi";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     [ordersApi.reducerPath]: ordersApi.reducer,
     [ratingsApi.reducerPath]: ratingsApi.reducer,
     [tablesApi.reducerPath]: tablesApi.reducer,
+    [monitoringsApi.reducerPath]: monitoringsApi.reducer,
     // [paymentsApi.reducerPath]: paymentsApi.reducer,
     // [tablesApi.reducerPath]: tablesApi.reducer,
   },
@@ -22,6 +24,7 @@ export const store = configureStore({
       ordersApi.middleware,
       ratingsApi.middleware,
       tablesApi.middleware,
+      monitoringsApi.middleware,
       // paymentsApi.middleware,
       // tablesApi.middleware,
     ),
