@@ -49,6 +49,13 @@ const Dashboard = () => {
     (o) => o.status === "Menunggu",
   ).length;
 
+  const changePage = (newPage) => {
+    setQuery((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
+  };
+
   return (
     <AdminLayout>
       <div className="p-[37px]">
@@ -67,40 +74,40 @@ const Dashboard = () => {
         </div>
 
         {/* Products Container */}
-        
-          {/* Tabs and Search */}
-          <div className="flex items-center gap-[23px] mb-[40px]">
-            {["Semua", "Makanan", "Minuman", "Best Seller"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setSelectedTab(tab)}
-                className={`w-[120px] h-[48px] rounded-[30px] font-roboto font-bold text-[20px] transition-all active:scale-95 border ${
-            selectedTab === tab
-              ? "bg-[#FFD900] text-[#743B0E] shadow-xl border-white/30"
-              : "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
-          }`}
-              >
-                {tab}
-              </button>
-            ))}
 
-            <div className="ml-auto w-[270px] h-[46px] bg-white/10 backdrop-blur-md border border-white/40 rounded-[6px] shadow-lg flex items-center px-[8px] gap-[4px] group focus-within:bg-white/20 transition-all">
-              <input
-                type="text"
-                placeholder="Cari Menu.."
-                className="bg-transparent border-none outline-none flex-1 font-roboto text-[14px] text-white/50"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <img alt="" className="size-[20px]" src={imgIcSearch} />
-            </div>
+        {/* Tabs and Search */}
+        <div className="flex items-center gap-[23px] mb-[40px]">
+          {["Semua", "Makanan", "Minuman", "Best Seller"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setSelectedTab(tab)}
+              className={`w-[120px] h-[48px] rounded-[30px] font-roboto font-bold text-[20px] transition-all active:scale-95 border ${
+                selectedTab === tab
+                  ? "bg-[#FFD900] text-[#743B0E] shadow-xl border-white/30"
+                  : "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+
+          <div className="ml-auto w-[270px] h-[46px] bg-white/10 backdrop-blur-md border border-white/40 rounded-[6px] shadow-lg flex items-center px-[8px] gap-[4px] group focus-within:bg-white/20 transition-all">
+            <input
+              type="text"
+              placeholder="Cari Menu.."
+              className="bg-transparent border-none outline-none flex-1 font-roboto text-[14px] text-white/50"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <img alt="" className="size-[20px]" src={imgIcSearch} />
           </div>
+        </div>
 
-          {/* Product Grid */}
-          <div className="grid grid-cols-3 gap-x-[40px] gap-y-[40px]">
-            {products
-              .filter((product) => !product.is_deleted)
-              .map((product, index) => (
+        {/* Product Grid */}
+        <div className="grid grid-cols-3 gap-x-[40px] gap-y-[40px]">
+          {products
+            .filter((product) => !product.is_deleted)
+            .map((product, index) => (
               <div
                 key={product.id}
                 className="h-[420px] rounded-[6px] bg-white/10 backdrop-blur-xl border border-white/20 overflow-hidden relative shadow-[0_26px_42px_rgba(0,0,0,0.5),inset_0_30px_12px_-21px_rgba(0,0,0,0.32)] transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:shadow-[0_35px_50px_rgba(0,0,0,0.6)]"
@@ -130,14 +137,81 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
+        </div>
+        {/* Pagination */}
+        <div className="mt-16 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-8 py-5 shadow-lg">
+          {/* Limit */}
+          <div className="flex items-center gap-3 text-white font-roboto">
+            <span className="text-lg">Tampilkan</span>
+
+            <select
+              value={query.limit}
+              onChange={(e) =>
+                setQuery((prev) => ({
+                  ...prev,
+                  limit: Number(e.target.value),
+                  page: 1,
+                }))
+              }
+              className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white outline-none focus:border-[#FFD900]"
+            >
+              <option className="text-black" value={5}>
+                5
+              </option>
+              <option className="text-black" value={10}>
+                10
+              </option>
+              <option className="text-black" value={20}>
+                20
+              </option>
+              <option className="text-black" value={50}>
+                50
+              </option>
+              <option className="text-black" value={100}>
+                100
+              </option>
+            </select>
+
+            <span className="text-lg">menu</span>
           </div>
 
-          {/* Bottom Vector decoration */}
-          <div className="absolute bottom-0 left-0 right-0 h-0">
-            <img alt="" className="w-full opacity-30" src={imgVector200} />
+          {/* Pagination */}
+          <div className="flex items-center gap-4">
+            <button
+              disabled={page === 1}
+              onClick={() => changePage(page - 1)}
+              className={`px-6 py-3 rounded-full font-bold transition-all ${
+                page === 1
+                  ? "bg-white/5 text-white/30 cursor-not-allowed"
+                  : "bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95"
+              }`}
+            >
+              ← Prev
+            </button>
+
+            <div className="px-6 py-3 rounded-full bg-[#FFD900] text-[#743B0E] font-black shadow-lg">
+              {meta?.page} / {meta?.totalPages}
+            </div>
+
+            <button
+              disabled={page >= (meta?.totalPages || 1)}
+              onClick={() => changePage(page + 1)}
+              className={`px-6 py-3 rounded-full font-bold transition-all ${
+                page >= (meta?.totalPages || 1)
+                  ? "bg-white/5 text-white/30 cursor-not-allowed"
+                  : "bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95"
+              }`}
+            >
+              Next →
+            </button>
           </div>
         </div>
-      
+
+        {/* Bottom Vector decoration */}
+        <div className="absolute bottom-0 left-0 right-0 h-0">
+          <img alt="" className="w-full opacity-30" src={imgVector200} />
+        </div>
+      </div>
     </AdminLayout>
   );
 };

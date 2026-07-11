@@ -12,7 +12,6 @@ const imgIcon1 = "/admin/plus.svg";
 const imgVector6 = "/admin/edit.svg";
 const imgWeuiDeleteOnFilled = "/admin/delete.svg";
 
-
 import { useProducts } from "../../services/adminProducts/productContext";
 
 const ManagementMenu = () => {
@@ -22,6 +21,7 @@ const ManagementMenu = () => {
   const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [modalType, setModalType] = useState(null); // "add" | "edit"
+  const [isDeleted, setIsDeleted] = useState(false);
   const navigate = useNavigate();
   const {
     products,
@@ -57,24 +57,30 @@ const ManagementMenu = () => {
   };
 
   const filteredMenu = products.filter((item) => {
-  if (item.is_deleted) return false;
+    const matchesDeleted = item.is_deleted === isDeleted;
 
-  const matchesSearch = item.name
-    .toLowerCase()
-    .includes(searchTerm.toLowerCase());
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-  const matchesCategory =
-    selectedCategory === "Semua Kategori" ||
-    item.category.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesCategory =
+      selectedCategory === "Semua Kategori" ||
+      item.category.toLowerCase() === selectedCategory.toLowerCase();
 
-  return matchesSearch && matchesCategory;
-});
-
+    return matchesSearch && matchesCategory && matchesDeleted;
+  });
 
   const stats = {
     total: menuItems.length,
     makanan: menuItems.filter((i) => i.category === "Makanan").length,
     minuman: menuItems.filter((i) => i.category === "Minuman").length,
+  };
+
+  const changePage = (newPage) => {
+    setQuery((prev) => ({
+      ...prev,
+      page: newPage,
+    }));
   };
 
   return (
@@ -93,17 +99,18 @@ const ManagementMenu = () => {
 
           <NewOrdersButton />
         </div>
-
         {/* Stats Section */}
         <div className="flex gap-[120px] mb-[35px]">
-          <div className="w-[380px] h-[120px] rounded-[15px]
+          <div
+            className="w-[380px] h-[120px] rounded-[15px]
               border border-white/20
               bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_100%)]
               backdrop-blur-xl
               shadow-[inset_0_30px_12px_-21px_rgba(0,0,0,0.32),0_0_42px_0_rgba(0,0,0,0.1)]
-              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]">
+              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]"
+          >
             <div className="w-[81px] h-[72px] bg-[rgba(217,217,217,0.1)] border border-white rounded-[15px] flex items-center justify-center">
-               <img src="/admin/orders.svg" className="w-[43px] h-[43px]" />
+              <img src="/admin/orders.svg" className="w-[43px] h-[43px]" />
             </div>
             <div>
               <p className="font-roboto font-medium text-[18px] text-white">
@@ -114,12 +121,14 @@ const ManagementMenu = () => {
               </p>
             </div>
           </div>
-          <div className="w-[380px] h-[120px] rounded-[15px]
+          <div
+            className="w-[380px] h-[120px] rounded-[15px]
               border border-white/20
               bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_100%)]
               backdrop-blur-xl
               shadow-[inset_0_30px_12px_-21px_rgba(0,0,0,0.32),0_0_42px_0_rgba(0,0,0,0.1)]
-              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]">
+              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]"
+          >
             <div className="w-[81px] h-[72px] bg-[rgba(217,217,217,0.1)] border border-white rounded-[15px] flex items-center justify-center">
               <img src="/admin/makanan.svg" className="w-[46px] h-[46px]" />
             </div>
@@ -132,11 +141,13 @@ const ManagementMenu = () => {
               </p>
             </div>
           </div>
-          <div className="w-[380px] h-[120px] rounded-[15px] border border-white/20
+          <div
+            className="w-[380px] h-[120px] rounded-[15px] border border-white/20
               bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_100%)]
               backdrop-blur-xl
               shadow-[inset_0_30px_12px_-21px_rgba(0,0,0,0.32),0_0_42px_0_rgba(0,0,0,0.1)]
-              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]">
+              overflow-hidden relative flex items-center gap-[21px] p-[24px] pl-[31px]"
+          >
             <div className="w-[81px] h-[72px] bg-[rgba(217,217,217,0.1)] border border-white rounded-[15px] flex items-center justify-center">
               <img src="/admin/minuman.svg" className="w-[46px] h-[46px]" />
             </div>
@@ -150,7 +161,6 @@ const ManagementMenu = () => {
             </div>
           </div>
         </div>
-
         {/* Table Section */}
         <div className="rounded-[15px] border border-white bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_100%)] backdrop-blur-xl shadow-[inset_0_30px_12px_-21px_rgba(0,0,0,0.32),0_0_42px_0_rgba(0,0,0,0.1)] p-[23px] min-h-[1355px]">
           <div className="flex items-center justify-between mb-[24px]">
@@ -158,6 +168,21 @@ const ManagementMenu = () => {
               Daftar Menu
             </h3>
             <div className="flex gap-[8px]">
+              <div className="relative w-[115px] h-[30px]">
+                <select
+                  className="w-full h-full bg-[#9d8a7e] rounded-[10px] shadow-[0px_10px_6px_rgba(0,0,0,0.25)] px-[13px] font-roboto font-medium text-[18px] text-white outline-none appearance-none cursor-pointer"
+                  value={isDeleted}
+                  onChange={(e) => setIsDeleted(e.target.value === "true")}
+                >
+                  <option value={false}>Aktif</option>
+                  <option value={true}>Dihapus</option>
+                </select>
+                <img
+                  alt=""
+                  className="absolute right-2 top-1 size-[24px] pointer-events-none"
+                  src="/admin/dropdownn.svg"
+                />
+              </div>
               <div className="relative w-[215px] h-[30px]">
                 <select
                   className="w-full h-full bg-[#9d8a7e] rounded-[10px] shadow-[0px_10px_6px_rgba(0,0,0,0.25)] px-[13px] font-roboto font-medium text-[18px] text-white outline-none appearance-none cursor-pointer"
@@ -176,11 +201,11 @@ const ManagementMenu = () => {
               </div>
               <div className="relative w-[200px] h-[30px] bg-[#9d8a7e] rounded-[10px] shadow-[0px_10px_6px_rgba(0,0,0,0.25)] flex items-center px-[13px]">
                 <img
-                    src="/admin/search.svg"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-[14px] h-[14px] brightness-0 invert opacity-80"
-                    alt="search"
+                  src="/admin/search.svg"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-[14px] h-[14px] brightness-0 invert opacity-80"
+                  alt="search"
                 />
-                
+
                 <input
                   type="text"
                   placeholder="Cari Menu..."
@@ -208,9 +233,8 @@ const ManagementMenu = () => {
               </button>
             </div>
           </div>
-
           {/* Table Header */}
-          <div className="grid grid-cols-[90px_1fr_120px_150px_150px_100px] gap-[40px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-t-[15px] h-[54px] items-center px-[26px] shadow-[0_26px_42px_rgba(0,0,0,0.15)] text-white">
+          <div className="grid grid-cols-[90px_1fr_120px_100px_100px_100px] gap-[40px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-t-[15px] h-[54px] items-center px-[26px] shadow-[0_26px_42px_rgba(0,0,0,0.15)] text-white">
             <span className="font-roboto font-medium text-[18px]">Gambar</span>
             <span className="font-roboto font-medium text-[18px]">Nama</span>
             <span className="font-roboto font-medium text-[18px]">
@@ -220,13 +244,12 @@ const ManagementMenu = () => {
             <span className="font-roboto font-medium text-[18px]">Stok</span>
             <span className="font-roboto font-medium text-[18px]">Aksi</span>
           </div>
-
           {/* Table Rows */}
           <div className="space-y-0 mt-0">
             {filteredMenu.map((product, index) => (
               <div
                 key={product.id}
-                className="grid grid-cols-[90px_1fr_120px_150px_150px_100px] gap-[40px] bg-white/5 backdrop-blur-md border border-white/10 h-[96px] items-center px-[26px] hover:bg-white/10 hover:scale-[1.01] transition-all duration-300"
+                className="grid grid-cols-[90px_1fr_120px_100px_100px_100px] gap-[40px] bg-white/5 backdrop-blur-md border border-white/10 h-[96px] items-center px-[26px] hover:bg-white/10 hover:scale-[1.01] transition-all duration-300"
               >
                 <div className="w-[90px] h-[80px] relative">
                   <img
@@ -257,33 +280,32 @@ const ManagementMenu = () => {
                   {rupiahFormat(product.price)}
                 </span>
 
-                
-                  <div
-                    className={`px-[10px] py-[4px] rounded-[5px] text-center inline-block translate-x-[-30px] ${
+                <div
+                  className={`px-[10px] py-[4px] rounded-[5px] text-center inline-block translate-x-[-30px] ${
+                    product.is_deleted === true
+                      ? "bg-[#d20102]/85"
+                      : product.is_active === true
+                        ? "bg-accent-yellow/85"
+                        : "bg-[#d20102]/85"
+                  }`}
+                >
+                  <span
+                    className={`font-roboto font-medium text-[18px] ${
                       product.is_deleted === true
-                        ? "bg-[#d20102]/85"
+                        ? "text-white"
                         : product.is_active === true
-                          ? "bg-accent-yellow/85"
-                          : "bg-[#d20102]/85"
+                          ? "text-[#743B0E]"
+                          : "text-white"
                     }`}
                   >
-                    <span
-                        className={`font-roboto font-medium text-[18px] ${
-                          product.is_deleted === true
-                            ? "text-white"
-                            : product.is_active === true
-                              ? "text-[#743B0E]"
-                              : "text-white"
-                        }`}
-                      >
-                        {product.is_deleted === true
-                          ? "Deleted"
-                          : product.is_active === true
-                            ? "Tersedia"
-                            : "Habis"}
-                    </span>
-                  </div>
-                
+                    {product.is_deleted === true
+                      ? "Deleted"
+                      : product.is_active === true
+                        ? "Tersedia"
+                        : "Habis"}
+                  </span>
+                </div>
+
                 <div className="flex gap-[8px] items-center">
                   <div
                     className="w-[20px] h-[20px] cursor-pointer hover:scale-110 transition-transform"
@@ -294,50 +316,117 @@ const ManagementMenu = () => {
                   >
                     <img alt="Edit" src={imgVector6} className="size-full" />
                   </div>
-                  <div
-                    className="size-[35px] cursor-pointer hover:scale-110 transition-transform"
-                    onClick={() => handleDelete(product)}
-                  >
-                    <img
-                      alt="Delete"
-                      src={imgWeuiDeleteOnFilled}
-                      className="size-full"
-                    />
-                  </div>
+                  {isDeleted === false && (
+                    <div
+                      className="size-[35px] cursor-pointer hover:scale-110 transition-transform"
+                      onClick={() => handleDelete(product)}
+                    >
+                      <img
+                        alt="Delete"
+                        src={imgWeuiDeleteOnFilled}
+                        className="size-full"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
+          {/* Pagination */}
+          <div className="mt-16 flex flex-col md:flex-row items-center justify-between gap-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl px-8 py-5 shadow-lg">
+            {/* Limit */}
+            <div className="flex items-center gap-3 text-white font-roboto">
+              <span className="text-lg">Tampilkan</span>
+
+              <select
+                value={query.limit}
+                onChange={(e) =>
+                  setQuery((prev) => ({
+                    ...prev,
+                    limit: Number(e.target.value),
+                    page: 1,
+                  }))
+                }
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white outline-none focus:border-[#FFD900]"
+              >
+                <option className="text-black" value={5}>
+                  5
+                </option>
+                <option className="text-black" value={10}>
+                  10
+                </option>
+                <option className="text-black" value={20}>
+                  20
+                </option>
+                <option className="text-black" value={50}>
+                  50
+                </option>
+                <option className="text-black" value={100}>
+                  100
+                </option>
+              </select>
+
+              <span className="text-lg">menu</span>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center gap-4">
+              <button
+                disabled={page === 1}
+                onClick={() => changePage(page - 1)}
+                className={`px-6 py-3 rounded-full font-bold transition-all ${
+                  page === 1
+                    ? "bg-white/5 text-white/30 cursor-not-allowed"
+                    : "bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95"
+                }`}
+              >
+                ← Prev
+              </button>
+
+              <div className="px-6 py-3 rounded-full bg-[#FFD900] text-[#743B0E] font-black shadow-lg">
+                {meta?.page} / {meta?.totalPages}
+              </div>
+
+              <button
+                disabled={page >= (meta?.totalPages || 1)}
+                onClick={() => changePage(page + 1)}
+                className={`px-6 py-3 rounded-full font-bold transition-all ${
+                  page >= (meta?.totalPages || 1)
+                    ? "bg-white/5 text-white/30 cursor-not-allowed"
+                    : "bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95"
+                }`}
+              >
+                Next →
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
+      {(modalType === "add" || modalType === "edit") && (
+        <ProductFormModal
+          product={selected}
+          onClose={() => {
+            setModalType(null);
+            setSelected(null);
+          }}
+          onSave={async (data) => {
+            try {
+              if (modalType === "add") {
+                await addProduct(data);
+              } else {
+                await editProduct(data.id, data);
+              }
 
-
-
-{(modalType === "add" || modalType === "edit") && (
-  <ProductFormModal
-    product={selected}
-    onClose={() => {
-      setModalType(null);
-      setSelected(null);
-    }}
-    onSave={async (data) => {
-      try {
-        if (modalType === "add") {
-          await addProduct(data);
-        } else {
-          await editProduct(data.id, data);
-        }
-
-        setModalType(null);
-        setSelected(null);
-      } catch (err) {
-        console.error(err);
-      }
-    }}
-  />
-)}
+              setModalType(null);
+              setSelected(null);
+            } catch (err) {
+              console.error(err);
+            }
+          }}
+        />
+      )}
     </AdminLayout>
   );
-}
-export default ManagementMenu;   
+};
+export default ManagementMenu;
